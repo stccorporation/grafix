@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>График Работы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            margin-top: 20px;
+        }
+        #status {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #333;
+        }
+        .info {
+            font-size: 20px;
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>График Работы</h1>
+        <p id="status"></p>
+        <p class="info" id="remaining"></p>
+        <p class="info" id="worked"></p>
+    </div>
+    
+    <script>
+        function checkWorkStatus() {
+            const now = new Date();
+            const day = now.getDay(); 
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const currentTime = hours * 3600 + minutes * 60 + seconds;
+            
+            let startWork, endWork;
+            if (day === 0 || day === 6) { // Воскресенье (0) и суббота (6)
+                startWork = 9 * 3600;
+                endWork = 23 * 3600;
+            } else { // Понедельник - Пятница
+                startWork = 14 * 3600;
+                endWork = 22 * 3600;
+            }
+            
+            let breakStart = null;
+            let breakEnd = null;
+            if (day === 2 || day === 5) {
+                breakStart = 15 * 3600;
+                breakEnd = 17 * 3600;
+            }
+            
+            let statusText = "Смена на сегодня закончена";
+            let remainingText = "До начала смены: " + Math.floor((startWork - currentTime) / 3600) + " ч. " + Math.floor(((startWork - currentTime) % 3600) / 60) + " мин. " + ((startWork - currentTime) % 60) + " сек.";
+            let workedText = "";
+            
+            if (currentTime >= startWork && currentTime < endWork) {
+                if (breakStart && currentTime >= breakStart && currentTime < breakEnd) {
+                    statusText = "Важные дела";
+                    remainingText = "До конца важного дела: " + Math.floor((breakEnd - currentTime) / 3600) + " ч. " + Math.floor(((breakEnd - currentTime) % 3600) / 60) + " мин. " + ((breakEnd - currentTime) % 60) + " сек.";
+                } else {
+                    statusText = "Рабочее время";
+                    let timeLeft = endWork - currentTime;
+                    let workedTime = currentTime - startWork;
+                    if (breakStart && currentTime > breakEnd) {
+                        workedTime -= (breakEnd - breakStart);
+                    }
+                    remainingText = `До конца смены: ${Math.floor(timeLeft / 3600)} ч. ${Math.floor((timeLeft % 3600) / 60)} мин. ${timeLeft % 60} сек.`;
+                    workedText = `Отработано: ${Math.floor(workedTime / 3600)} ч. ${Math.floor((workedTime % 3600) / 60)} мин. ${workedTime % 60} сек.`;
+                }
+            }
+            
+            document.getElementById("status").textContent = statusText;
+            document.getElementById("remaining").textContent = remainingText;
+            document.getElementById("worked").textContent = workedText;
+        }
+        
+        checkWorkStatus();
+        setInterval(checkWorkStatus, 1000); 
+    </script>
+</body>
+</html>
